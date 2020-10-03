@@ -165,3 +165,42 @@ credit_train_model <- rpart(Class ~ . , data = credit_train)
 predict_unsmote <- predict(credit_train_model,credit_test,type = "class")
 
 confusionMatrix(predict_unsmote,credit_test$Class)
+
+control <- trainControl(method = "cv",number = 10)
+
+metric <- "Accuracy"
+
+set.seed(10)
+#cart
+
+fit.rpart <- train(Class ~ . , data = smote_credit , method = "rpart" , trControl = control , metric= metric )
+
+set.seed(10)
+
+#kNN
+
+fit.knn <-  train(Class ~ . , data = smote_credit , method = "knn" , trControl = control , metric= metric )
+
+set.seed(10)
+
+#svm
+
+fit.svm <- train(Class ~ . , data = smote_credit , method = "svmRadial" , trControl = control , metric= metric )
+
+#randomforest
+set.seed(10)
+
+fit.rf <- train(Class ~ . , data = smote_credit , method = "rf" , trControl = control , metric= metric )
+
+results <- resamples(list(rpart = fit.rpart , knn = fit.knn , svm = fit.svm , rf = fit.rf))
+
+summary(results)
+
+dotplot(results)
+
+
+#Make predictions
+
+prediction <- predict(fit.rf,credit_test)
+
+confusionMatrix(prediction , credit_test$Class)
